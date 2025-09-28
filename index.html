@@ -382,8 +382,7 @@
         // GLOBAL STATE & UTILITIES 
         // =================================================================================== 
         let currentLang = 'ru'; 
-        // FIX: Инициализируем индексы для отслеживания 15 вариантов
-        const templateIndexes = { en: {}, ru: {} }; 
+        const templateIndexes = { en: {}, ru: {}, uk: {} }; 
         const copySvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg>';
         const starSvg = '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>';
 
@@ -418,6 +417,7 @@
                 toast.classList.remove('show');
             }, 1500);
         }
+        window.showToast = showToast; // Делаем глобальной
 
         // =================================================================================== 
         // AUTHENTICATION 
@@ -475,17 +475,18 @@
                     document.getElementById('app-container').style.display = 'flex';
                     document.getElementById('app-container').setAttribute('data-logged', 'true');
                     document.getElementById('app-container').style.opacity = '1';
-                    toggleMobileView('buttons'); 
+                    window.toggleMobileView('buttons'); 
                 }, 2500); 
 
-                setupDarkMode();
-                renderFavorites();
+                window.setupDarkMode();
+                window.renderFavorites();
 
             } else {
                 errorDiv.textContent = appData.i18n[currentLang].errorInvalid;
                 errorDiv.classList.add('show');
             }
         } 
+        window.handleLogin = handleLogin; // Делаем глобальной
 
         function logout() { 
             setLocalStorage('chaterlabLoggedIn', false);
@@ -498,12 +499,18 @@
             document.getElementById('login-screen').style.display = 'flex';
             document.body.classList.add('login-active');
         } 
+        window.logout = logout; // Делаем глобальной
 
         // =================================================================================== 
         // INTERNATIONALIZATION (i18n) & UI UPDATES 
         // =================================================================================== 
-        function getInitialLanguage() { return getLocalStorage('chaterlabLang', 'ru'); } 
-        function switchLanguage(lang) { currentLang = lang; setLocalStorage('chaterlabLang', lang); updateUI(lang); } 
+        function switchLanguage(lang) { 
+            currentLang = lang; 
+            setLocalStorage('chaterlabLang', lang); 
+            window.updateUI(lang); 
+        } 
+        window.switchLanguage = switchLanguage; // Делаем глобальной
+
 
         function updateUI(lang) { 
             document.querySelectorAll('[data-key]').forEach(el => { 
@@ -521,15 +528,16 @@
             document.querySelectorAll('.toggle button').forEach(btn => {
                 const buttonLangCode = btn.id.replace('btn', '').toLowerCase();
                 
-                // Проверяем, соответствует ли извлеченный код текущему языку (lang).
                 const isActive = (lang === 'uk' && buttonLangCode === 'ua') || buttonLangCode === lang;
                 
                 btn.classList.toggle('active', isActive);
             });
             
-            updateInstructions(lang); 
-            renderSidebarButtons(); // <--- Генерируем кнопки при смене языка
+            window.updateInstructions(lang); 
+            window.renderSidebarButtons(); // <--- Генерируем кнопки при смене языка
         } 
+        window.updateUI = updateUI; // Делаем глобальной
+
         
         /**
          * Функция для генерации инструкции 
@@ -651,6 +659,7 @@
             `;
             instructionsDiv.innerHTML = content;
         }
+        window.updateInstructions = updateInstructions; // Делаем глобальной
 
         // =================================================================================== 
         // CORE FUNCTIONALITY: COPY, SEARCH, FAVORITES, STATS 
@@ -662,9 +671,9 @@
             // Проверяем, существует ли контент для данного языка и типа, прежде чем пытаться скопировать
             if (!templates || !templates[type] || templates[type].length === 0) {
                 if (lang === 'uk') {
-                     showToast(appData.i18n[currentLang].toastMessage + " (Контент UA неактивен)");
+                     window.showToast(appData.i18n[currentLang].toastMessage + " (Контент UA неактивен)");
                 } else {
-                     showToast(`Error: Content for ${lang} not found.`);
+                     window.showToast(`Error: Content for ${lang} not found.`);
                 }
                 return;
             }
@@ -683,8 +692,8 @@
             const buttonElement = document.getElementById(buttonId);
 
             navigator.clipboard.writeText(textToCopy).then(() => { 
-                showToast(successMessage); 
-                trackClick(buttonId); 
+                window.showToast(successMessage); 
+                window.trackClick(buttonId); 
                 
                 // === ЛОГИКА ДЛЯ ВИЗУАЛЬНОГО ФИДБЕКА ===
                 if (buttonElement) {
@@ -695,11 +704,12 @@
                 }
                 // ===========================================
                 
-            }).catch(() => showToast('Error copying')); 
+            }).catch(() => window.showToast('Error copying')); 
             
             // Циклический переход к следующему варианту
             templateIndexes[lang][type] = (currentIndex + 1) % templateArray.length; 
         } 
+        window.copyAndCycle = copyAndCycle; // Делаем глобальной
         
         function handleSearch(event) { 
             const query = event.target.value.toLowerCase(); 
@@ -721,6 +731,7 @@
                 if(h2) h2.style.display = visibleButtons > 0 ? 'block' : 'none'; 
             }); 
         } 
+        window.handleSearch = handleSearch; // Делаем глобальной
 
         function toggleFavorite(event, buttonId) { 
             event.stopPropagation(); 
@@ -737,8 +748,9 @@
                 favToggle.classList.add('is-favorite'); 
             } 
             setLocalStorage('chaterlabFavorites', favorites); 
-            renderFavorites(); 
+            window.renderFavorites(); 
         } 
+        window.toggleFavorite = toggleFavorite; // Делаем глобальной
 
         function renderFavorites() { 
             const favorites = getLocalStorage('chaterlabFavorites', []); 
@@ -760,15 +772,18 @@
                 buttons.forEach(button => section.appendChild(button)); 
             }); 
         } 
+        window.renderFavorites = renderFavorites; // Делаем глобальной
 
         function trackClick(buttonId) { 
             const stats = getLocalStorage('chaterlabStats', {}); 
             stats[buttonId] = (stats[buttonId] || 0) + 1; 
             setLocalStorage('chaterlabStats', stats); 
         } 
+        window.trackClick = trackClick; // Делаем глобальной
         
         function getStats() { console.table(getLocalStorage('chaterlabStats', {})); } 
-        
+        window.getStats = getStats; // Делаем глобальной
+
         function setupDarkMode() { 
             const toggle = document.getElementById('theme-checkbox'); 
             const currentTheme = getLocalStorage('chaterlabTheme', 'light'); 
@@ -784,6 +799,7 @@
                 setLocalStorage('chaterlabTheme', theme); 
             }); 
         } 
+        window.setupDarkMode = setupDarkMode; // Делаем глобальной
 
         // ===================================================================================
         // MOBILE VIEW TOGGLE
@@ -815,6 +831,7 @@
                 if (switchInstructions) switchInstructions.classList.remove('active');
             }
         }
+        window.toggleMobileView = toggleMobileView; // Делаем глобальной
         
         // ===================================================================================
         // ДИНАМИЧЕСКАЯ ГЕНЕРАЦИЯ КНОПОК
@@ -868,37 +885,35 @@
                 if (btnRu) ruSection.insertAdjacentHTML('beforeend', btnRu);
             });
             
-            renderFavorites(); 
+            window.renderFavorites(); 
         }
+        window.renderSidebarButtons = renderSidebarButtons; // Делаем глобальной
         
         // =================================================================================== 
         // DYNAMIC CONTENT & EVENT LISTENERS 
         // =================================================================================== 
         
-        // Функции-обертки для копирования (для совместимости)
-        // Они больше не нужны, так как кнопки вызывают copyAndCycle напрямую, но оставлены для предотвращения ошибок
+        // Здесь остался только вызов DOMContentLoaded, который запускает приложение
         
         window.addEventListener('resize', () => {
              const main = document.querySelector('main');
              const activeView = main.classList.contains('info-visible') ? 'instructions' : 'buttons';
-             toggleMobileView(activeView);
+             window.toggleMobileView(activeView);
         });
         
 
         document.addEventListener('DOMContentLoaded', () => { 
             const loggedIn = checkLogin(); 
-            document.getElementById('login-form').addEventListener('submit', handleLogin); 
-            document.getElementById('searchInput').addEventListener('input', handleSearch); 
+            document.getElementById('login-form').addEventListener('submit', window.handleLogin); 
+            document.getElementById('searchInput').addEventListener('input', window.handleSearch); 
             
             const initialLang = getInitialLanguage(); 
-            switchLanguage(initialLang); 
-
-            // Кнопки генерируются в switchLanguage, которая вызывает updateUI, которая вызывает renderSidebarButtons()
+            window.switchLanguage(initialLang); 
 
             if (loggedIn) { 
-                toggleMobileView('buttons'); 
-                setupDarkMode(); 
-                renderFavorites(); 
+                window.toggleMobileView('buttons'); 
+                window.setupDarkMode(); 
+                window.renderFavorites(); 
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
             }
