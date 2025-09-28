@@ -382,6 +382,7 @@
         // GLOBAL STATE & UTILITIES 
         // =================================================================================== 
         let currentLang = 'ru'; 
+        // FIX: Инициализируем индексы для отслеживания 15 вариантов
         const templateIndexes = { en: {}, ru: {} }; 
         const copySvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"/></svg>';
         const starSvg = '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>';
@@ -470,7 +471,7 @@
 
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    overlay.classList.remove('animate');
+                    overlay.classList.remove('animate'); 
                     document.getElementById('app-container').style.display = 'flex';
                     document.getElementById('app-container').setAttribute('data-logged', 'true');
                     document.getElementById('app-container').style.opacity = '1';
@@ -669,10 +670,9 @@
             }
 
             const templateArray = templates[type];
-            if (!templateIndexes[lang] || !templateIndexes[lang][type]) {
-                 if (!templateIndexes[lang]) templateIndexes[lang] = {};
-                 templateIndexes[lang][type] = 0;
-            }
+            // FIX: Инициализируем индекс, если он отсутствует
+            if (!templateIndexes[lang]) templateIndexes[lang] = {};
+            if (templateIndexes[lang][type] === undefined) templateIndexes[lang][type] = 0;
             
             let currentIndex = templateIndexes[lang][type];
 
@@ -691,7 +691,7 @@
                     buttonElement.classList.add('copied');
                     setTimeout(() => {
                         buttonElement.classList.remove('copied');
-                    }, 300);
+                    }, 300); 
                 }
                 // ===========================================
                 
@@ -876,22 +876,7 @@
         // =================================================================================== 
         
         // Функции-обертки для копирования (для совместимости)
-        function copyGreetingENG() { copyAndCycle('en', 'greetings', 'btn-greeting-en'); }
-        function copyJobENG() { copyAndCycle('en', 'jobDescriptions', 'btn-job-en'); }
-        function copyFlirtENG() { copyAndCycle('en', 'flirtClosings', 'btn-flirt-en'); }
-        function copyContactENG() { copyAndCycle('en', 'contacts', 'btn-contact-en'); }
-
-        function copyGreetingRU() { copyAndCycle('ru', 'greetings', 'btn-greeting-ru'); }
-        function copyJobRU() { copyAndCycle('ru', 'jobDescriptions', 'btn-job-ru'); }
-        function copyJobPrimeRU() { copyAndCycle('ru', 'jobDescriptionsPrime', 'btn-jobprime-ru'); }
-        function copyFlirtRU() { copyAndCycle('ru', 'flirtClosings', 'btn-flirt-ru'); }
-        function copyContactRU() { copyAndCycle('ru', 'contacts', 'btn-contact-ru'); }
-        
-        function copyGreetingUK() { copyAndCycle('uk', 'greetings', 'btn-greeting-uk'); }
-        function copyJobUK() { copyAndCycle('uk', 'jobDescriptions', 'btn-job-uk'); }
-        function copyJobPrimeUK() { copyAndCycle('uk', 'jobDescriptionsPrime', 'btn-jobprime-uk'); }
-        function copyFlirtUK() { copyAndCycle('uk', 'flirtClosings', 'btn-flirt-uk'); }
-        function copyContactUK() { copyAndCycle('uk', 'contacts', 'btn-contact-uk'); }
+        // Они больше не нужны, так как кнопки вызывают copyAndCycle напрямую, но оставлены для предотвращения ошибок
         
         window.addEventListener('resize', () => {
              const main = document.querySelector('main');
